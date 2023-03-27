@@ -1,0 +1,77 @@
+import RPi.GPIO as GPIO 
+
+import time 
+
+  
+
+  
+
+potentiometer_pin = 18 
+
+GPIO.setmode(GPIO.BCM) 
+
+GPIO.setup(potentiometer_pin, GPIO.IN) 
+
+  
+
+def read_potentiometer(): 
+
+    value = GPIO.input(potentiometer_pin) 
+
+    return value 
+
+  
+
+  
+
+while True: 
+
+    potentiometer_value = read_potentiometer() 
+
+    print("Potentiometer value:", potentiometer_value) 
+
+    time.sleep(0.1) 
+
+______________________________________________ 
+
+ 
+
+Rainfall.py 
+
+import time 
+
+import RPi.GPIO as GPIO 
+
+  
+
+GPIO.setmode(GPIO.BCM) 
+
+GPIO.setup(4, GPIO.IN) 
+
+  
+
+rainfall = 0 
+
+last_state = GPIO.input(4) 
+
+  
+
+while True: 
+
+    current_state = GPIO.input(4) 
+
+    if current_state != last_state: 
+
+        if current_state == 1: 
+
+            rainfall += 0.2  
+
+    last_state = current_state 
+
+    time.sleep(0.01) 
+
+     
+
+    if time.time() % 300 == 0: 
+
+        print(f"Current rainfall: {rainfall} inches") 

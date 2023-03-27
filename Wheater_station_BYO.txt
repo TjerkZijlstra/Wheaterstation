@@ -1,0 +1,204 @@
+import statistics  
+
+ 
+
+from gpiozero import Button  
+
+  
+
+import math  
+
+  
+
+import time  
+
+  
+
+import bme280_sensor 
+
+  
+
+import wind_direction_byo 
+
+  
+
+import ds18b20_therm 
+
+  
+
+import database 
+
+  
+
+ wind_count = 0  
+
+  
+
+radius_cm = 8.0  
+
+  
+
+wind_interval = 5  
+
+  
+
+interval = 300 
+
+  
+
+ADJUSTMENT = 1.18  
+
+  
+
+bucket_size = 0.2794 
+
+  
+
+count = 0 
+
+  
+
+rain_count = 0 
+
+  
+
+gust = 0 
+
+  
+
+store_speeds = []  
+
+  
+
+store_directions = [] 
+
+  
+
+  def spin():  
+
+  
+
+    global wind_count  
+
+  
+
+    wind_count = wind_count + 1  
+ 
+
+  def calculate_speed(time_sec):  
+
+  
+
+    global wind_count 
+
+  
+
+    global gust  
+
+  
+
+    circref_cm = (2 * math.pi) * radius_cm  
+
+  
+
+    rotations = count / 2.0  
+
+  
+
+    dist_km = (circref_cm * rotations) / 100000  
+
+  
+
+    km_per_sec = dist_km / time_sec  
+
+  
+
+    km_per_hour = km_per_sec * 60  
+
+
+    final_speed = km_per_hour * ADJUSTMENT  
+
+    return final_speed 
+
+ def bucket_tipped(): 
+
+  
+
+global rain_count 
+
+  
+
+rain_count = rain_count + 1 
+
+  
+
+ def reset_rainfall(): 
+
+  
+
+global rain_count 
+
+  
+
+rain_count = 0 
+
+  def reset_wind():  
+
+  
+
+    global wind_count  
+
+    wind_count = 0  
+
+ wind_speed_sensor = Button(5)  
+
+wind_speed_sensor.when_pressed = spin 
+
+temp_probe = ds18b20_therm.DS18B20()  
+
+rain_sensor = Button(6) 
+
+rain_sensor.when_pressed = bucket_tipped 
+
+ while True:  
+
+    start_time = time.time()  
+
+    while time.time() - start_time <= wind_interval:  
+
+        wind_start_time = time.time() 
+
+  
+
+        reset_wind()  
+
+while time.time() - wind_start_time <= wind_interval: 
+
+store_directions.append(wind_direction_byo.get_value()) 
+
+        final_speed = calculate_speed(wind_interval)  
+
+        store_speeds.append(final_speeds)  
+
+  
+
+wind_average = wind_direction_byo.get_average(store_directions) 
+
+    
+    wind_gust = max(store_speeds)  
+
+    wind_speed = statistics.mean(store_speeds)  
+
+   rainfall = rain_count * bucket_size 
+
+  reset_rainfall() 
+
+store_speeds = [] 
+
+store_directions = []  
+
+humidity, pressure, ambient_temp = bme280_sensor.read_all() 
+
+    print(wind_speed, wind_gust, wind_average) 
+
+ 
